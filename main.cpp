@@ -19,6 +19,7 @@
 #include <wpi/raw_ostream.h>
 
 #include "cameraserver/CameraServer.h"
+#include <GoalPipeline.h>
 
 /*
    JSON format:
@@ -299,8 +300,8 @@ int main(int argc, char* argv[]) {
   // start image processing on camera 0 if present
   if (cameras.size() >= 1) {
     std::thread([&] {
-      frc::VisionRunner<MyPipeline> runner(cameras[0], new MyPipeline(),
-                                           [&](MyPipeline &pipeline) {
+      frc::VisionRunner<GoalPipeline> runner(cameras[0], new MyPipeline(),
+                                           [&](GoalPipeline &pipeline) {
         // do something with pipeline results
       });
       /* something like this for GRIP:

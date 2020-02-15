@@ -1,8 +1,14 @@
 #include "GoalPipeline.h"
+#include "networktables/NetworkTableInstance.h"
+#include "networktables/NetworkTableEntry.h"
+#include "networktables/NetworkTable.h"
+#include <chrono>
+
 
 namespace grip {
 
 GoalPipeline::GoalPipeline() {
+	mCameraInfo = CameraInfo(82.1, 3840.0, 52.2, 2160.0); 
 }
 /**
 * Runs an iteration of the pipeline and updates outputs.
@@ -10,6 +16,7 @@ GoalPipeline::GoalPipeline() {
 void GoalPipeline::Process(cv::Mat& source0){
 	//Step Blur0:
 	//input
+	auto start = std::chrono::high_resolution_clock::now();
 	cv::Mat blurInput = source0;
 	BlurType blurType = BlurType::GAUSSIAN;
 	double blurRadius = 3.6036036036036037;  // default Double
@@ -41,6 +48,11 @@ void GoalPipeline::Process(cv::Mat& source0){
 	double filterContoursMinRatio = 0.0;  // default Double
 	double filterContoursMaxRatio = 1000.0;  // default Double
 	filterContours(filterContoursContours, filterContoursMinArea, filterContoursMinPerimeter, filterContoursMinWidth, filterContoursMaxWidth, filterContoursMinHeight, filterContoursMaxHeight, filterContoursSolidity, filterContoursMaxVertices, filterContoursMinVertices, filterContoursMinRatio, filterContoursMaxRatio, this->filterContoursOutput);
+	double approxPolyMinLineDist = 50.0;
+	approximatePolygons(filterContoursOutput, approxPolyOutput, approxPolyMinLineDist);
+	generateTargets(approxPolyOutput, targetsOutput);
+	auto end = std::chrono::high_resolution_clock::now();
+	processingTime = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count(); ;
 }
 
 /**
@@ -164,6 +176,40 @@ std::vector<std::vector<cv::Point> >* GoalPipeline::GetFilterContoursOutput(){
 			if (ratio < minRatio || ratio > maxRatio) continue;
 			output.push_back(contour);
 		}
+	}
+
+	void GoalPipeline::approximatePolygons(std::vector<std::vector<cv::Point>>& contours, std::vector<std::vector<cv::Point>>& output, double minDistancePerSide){
+		output.clear();
+		for (std::vector<cv::Point> points : contours)
+		{
+			std::vector<cv::Point> poly;
+			cv::approxPolyDP(points, poly, minDistancePerSide, true);
+			output.push_back(poly);
+		}
+	}
+
+	void GoalPipeline::generateTargets(std::vector<std::vector<cv::Point>>& polygons, std::vector<Target>& targetsOutput){
+		targetsOutput.clear();
+		for (std::vector<cv::Point> points : polygons)
+		{
+			Target newTarget(points, mCameraInfo);
+			newTarget.process();
+			if(newTarget.isValid())
+			{
+				targetsOutput.push_back(newTarget);
+			}
+		}
+	}
+
+	void GoalPipeline::outputToSmartDashboard(nt::NetworkTableInstance networkTableInst){
+			if(targetsOutput.size() == 1)
+			{
+				std::shared_ptr<NetworkTable> table = networkTableInst.GetTable("Vision");
+				table->GetEntry("RobotToTarget").SetDouble(targetsOutput.at(0).getRobotToTargetAngle());
+				table->GetEntry("TargetDistance").SetDouble(targetsOutput.at(0).getDistanceToTarget());
+				table->GetEntry("TargetSkew").SetDouble(targetsOutput.at(0).getTargetSkewAngle());
+				table->GetEntry("VisionProcessTime").SetDouble(processingTime);
+			}
 	}
 
 
