@@ -1,3 +1,4 @@
+#include "vision/VisionPipeline.h"
 #include "GoalPipeline.h"
 #include "networktables/NetworkTableInstance.h"
 #include "networktables/NetworkTableEntry.h"
@@ -47,9 +48,9 @@ void GoalPipeline::Process(cv::Mat& source0){
 	double filterContoursMinVertices = 0.0;  // default Double
 	double filterContoursMinRatio = 0.0;  // default Double
 	double filterContoursMaxRatio = 1000.0;  // default Double
-	filterContours(filterContoursContours, filterContoursMinArea, filterContoursMinPerimeter, filterContoursMinWidth, filterContoursMaxWidth, filterContoursMinHeight, filterContoursMaxHeight, filterContoursSolidity, filterContoursMaxVertices, filterContoursMinVertices, filterContoursMinRatio, filterContoursMaxRatio, this->filterContoursOutput);
+	//filterContours(filterContoursContours, filterContoursMinArea, filterContoursMinPerimeter, filterContoursMinWidth, filterContoursMaxWidth, filterContoursMinHeight, filterContoursMaxHeight, filterContoursSolidity, filterContoursMaxVertices, filterContoursMinVertices, filterContoursMinRatio, filterContoursMaxRatio, this->filterContoursOutput);
 	double approxPolyMinLineDist = 50.0;
-	approximatePolygons(filterContoursOutput, approxPolyOutput, approxPolyMinLineDist);
+	approximatePolygons(findContoursOutput, approxPolyOutput, approxPolyMinLineDist);
 	generateTargets(approxPolyOutput, targetsOutput);
 	auto end = std::chrono::high_resolution_clock::now();
 	processingTime = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count(); ;
@@ -202,13 +203,23 @@ std::vector<std::vector<cv::Point> >* GoalPipeline::GetFilterContoursOutput(){
 	}
 
 	void GoalPipeline::outputToSmartDashboard(nt::NetworkTableInstance networkTableInst){
+			std::shared_ptr<NetworkTable> table = networkTableInst.GetTable("Vision");
 			if(targetsOutput.size() == 1)
 			{
-				std::shared_ptr<NetworkTable> table = networkTableInst.GetTable("Vision");
+
 				table->GetEntry("RobotToTarget").SetDouble(targetsOutput.at(0).getRobotToTargetAngle());
 				table->GetEntry("TargetDistance").SetDouble(targetsOutput.at(0).getDistanceToTarget());
 				table->GetEntry("TargetSkew").SetDouble(targetsOutput.at(0).getTargetSkewAngle());
 				table->GetEntry("VisionProcessTime").SetDouble(processingTime);
+				table->GetEntry("VisionValid").SetBoolean(true);
+			}
+			else
+			{
+				table->GetEntry("RobotToTarget").SetDouble(0);
+				table->GetEntry("TargetDistance").SetDouble(0);
+				table->GetEntry("TargetSkew").SetDouble(0);
+				table->GetEntry("VisionProcessTime").SetDouble(processingTime);
+				table->GetEntry("VisionValid").SetBoolean(false);
 			}
 	}
 

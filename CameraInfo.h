@@ -3,7 +3,8 @@
 
 class CameraInfo{
     public:
-        inline CameraInfo(double horizontalFOV, double horizontalResolution, double verticalFOV, double verticalResolution){mHorizontalResolution = horizontalResolution; mHorizontalFOV = horizontalFOV; mVerticalFOV = verticalFOV; mVerticalResolution = verticalResolution;}
+	CameraInfo(){mHorizontalFOV = 0; mHorizontalResolution = 0; mVerticalFOV = 0; mVerticalResolution = 0;}
+        CameraInfo(double horizontalFOV, double horizontalResolution, double verticalFOV, double verticalResolution){mHorizontalResolution = horizontalResolution; mHorizontalFOV = horizontalFOV; mVerticalFOV = verticalFOV; mVerticalResolution = verticalResolution;}
         inline double getHorizontalFOV(){ return mHorizontalFOV;}
         inline double getHorizontalResolution(){return mHorizontalResolution;}
         inline double getHorizontalFocalLength() {return mHorizontalResolution / (2* tan(((mHorizontalFOV * M_PI) / 180.0)/2));}
@@ -17,4 +18,4 @@ class CameraInfo{
         double mHorizontalResolution;
         double mVerticalFOV;
         double mVerticalResolution;
-}
+};

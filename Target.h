@@ -1,8 +1,7 @@
 #pragma once
-#include <CameraInfo.h>
+#include "CameraInfo.h"
 #include <opencv2/core/core.hpp>
 #include <vector>
-#include <CameraInfo.h>
 
 class Target
 {
@@ -18,7 +17,8 @@ class Target
     private:
         double getLeftDistance();
         double getRightDistance();
-        double getDistanceToSide(double pixelHeight);
+        double getDistanceToSide(double topY, double bottomY);
+	double getRadAngleBetweenPoints(double px1, double py1, double px2, double py2, double cx1, double cy1);
 
         std::vector<cv::Point> mPoints;
         CameraInfo mCameraInfo;
@@ -26,5 +26,11 @@ class Target
         cv::Point bottomLeft;
         cv::Point topRight;
         cv::Point bottomRight;
+	bool valid;
+        double projectedBottomLeftX;
+        double projectedBottomLeftY;
+        double projectedBottomRightX;
+        double projectedBottomRightY;
+        double distance;
 
-}
+};

@@ -1,6 +1,6 @@
-#include <Target.h>
-#include <Algorithm.h>
-#include <CameraInfo.h>
+#include "Target.h"
+#include <algorithm>
+#include "CameraInfo.h"
 
 Target::Target(const std::vector<cv::Point>& points, CameraInfo cameraInfo){
     mPoints = points;
@@ -8,50 +8,8 @@ Target::Target(const std::vector<cv::Point>& points, CameraInfo cameraInfo){
 }
 
 bool Target::isValid(){
-    return isValid;
+    return valid;
     
-}
-
-void Target::process(){
-    if(mPoints.size() > 3)
-    {
-        try{
-        auto comp = [](cv::Point a, cv::Point b) {return a.x > b.x;};
-        std::sort(mPoints.front, mPoints.back, comp);
-        topLeft = mPoints[0];
-        bottomLeft = mPoints[1];
-        bottomRight = mPoints[2];
-        topRight = mPoints[3];
-        //http://www.softwareandfinance.com/Visual_CPP/VCPP_Intersection_Two_lines_EndPoints.html  was helpful in making this
-        bottomLineSlope = (bottomRight.y - bottomLeft.y) / (bottomRight.x - bottomRight.x);
-        bottomLineIntercept = (bottomLeft.y - bottomLineSlope) * bottomLeft.x;
-        double leftLineSlope = tan(((M_PI)/2) +(getRadAngleBetweenPoints(bottomRight.x, bottomRight.y, topLeft.x, topLeft.y, bottomLeft.x, bottomLeft.y)-((2 * M_PI)/3)));
-        double leftLineIntercept = (topLeft.y - leftLineSlope) * topLeft.x;
-        double rightLineSlope = tan(((M_PI)/2) -(getRadAngleBetweenPoints(bottomLeft.x, bottomLeft.y, topRight.x, topRight.y, bottomRight.x, bottomRight.y) - ((2 * M_PI)/3)));
-        double rightLineIntercept = (topRight.y - rightLineSlope) * topRight.x;
-        projectedBottomLeftX = (leftLineIntercept - bottomLineIntercept) / (bottomLineSlope - leftLineSlope);
-        projectedBottomLeftY = bottomLineSlope * projectedBottomLeftX + bottomLineIntercept;
-        projectedBottomRightX = (rightLineIntercept - bottomLineIntercept) / (bottomLineSlope - rightLineSlope);
-        projectedBottomRightY = bottomLineSlope * projectedBottomRightX + bottomLineIntercept;
-        double distance = getDistanceToTarget();
-        if(distance < 10 || distance > 636 || abs(getTargetSkewAngle()) > 50)
-        {
-            valid = false;
-        }
-        catch(...){
-            valid = false;
-        }
-    }
-    else{
-        topLeft = cv::Point(0, 0);
-        bottomLeft = cv::Point(0, 0);
-        bottomRight = cv::Point(0, 0);
-        topRight = cv::Point(0, 0);
-        bottomLineSlope = 0;
-        bottomLineIntercept = 0;
-    }
-
-
 }
 
 double Target::getDistanceToTarget(){
@@ -120,3 +78,46 @@ double Target::getRadAngleBetweenPoints(double px1, double py1, double px2, doub
 
  return A;
 }
+
+void Target::process(){
+    if(mPoints.size() > 3)
+    {
+        try{
+        auto comp = [](cv::Point a, cv::Point b) {return a.x > b.x;};
+        std::sort(mPoints.begin(), mPoints.end(), comp);
+        topLeft = mPoints[0];
+        bottomLeft = mPoints[1];
+        bottomRight = mPoints[2];
+        topRight = mPoints[3];
+        //http://www.softwareandfinance.com/Visual_CPP/VCPP_Intersection_Two_lines_EndPoints.html  was helpful in making this
+        double bottomLineSlope = (bottomRight.y - bottomLeft.y) / (bottomRight.x - bottomRight.x);
+        double bottomLineIntercept = (bottomLeft.y - bottomLineSlope) * bottomLeft.x;
+        double leftLineSlope = tan(((M_PI)/2) +(getRadAngleBetweenPoints(bottomRight.x, bottomRight.y, topLeft.x, topLeft.y, bottomLeft.x, bottomLeft.y)-((2 * M_PI)/3)));
+        double leftLineIntercept = (topLeft.y - leftLineSlope) * topLeft.x;
+        double rightLineSlope = tan(((M_PI)/2) -(getRadAngleBetweenPoints(bottomLeft.x, bottomLeft.y, topRight.x, topRight.y, bottomRight.x, bottomRight.y) - ((2 * M_PI)/3)));
+        double rightLineIntercept = (topRight.y - rightLineSlope) * topRight.x;
+        projectedBottomLeftX = (leftLineIntercept - bottomLineIntercept) / (bottomLineSlope - leftLineSlope);
+        projectedBottomLeftY = bottomLineSlope * projectedBottomLeftX + bottomLineIntercept;
+        projectedBottomRightX = (rightLineIntercept - bottomLineIntercept) / (bottomLineSlope - rightLineSlope);
+        projectedBottomRightY = bottomLineSlope * projectedBottomRightX + bottomLineIntercept;
+        distance = getDistanceToTarget();
+        if(distance < 10 || distance > 636 || abs(getTargetSkewAngle()) > 50)
+        {
+            valid = false;
+        }
+	}
+        catch(...){
+            valid = false;
+        }
+    }
+    else{
+        topLeft = cv::Point(0, 0);
+        bottomLeft = cv::Point(0, 0);
+        bottomRight = cv::Point(0, 0);
+        topRight = cv::Point(0, 0);
+    }
+
+
+}
+
+

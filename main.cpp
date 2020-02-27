@@ -19,7 +19,7 @@
 #include <wpi/raw_ostream.h>
 
 #include "cameraserver/CameraServer.h"
-#include <GoalPipeline.h>
+#include "GoalPipeline.h"
 
 /*
    JSON format:
@@ -219,6 +219,8 @@ bool ReadConfig() {
   return true;
 }
 
+
+
 cs::UsbCamera StartCamera(const CameraConfig& config) {
   wpi::outs() << "Starting camera '" << config.name << "' on " << config.path
               << '\n';
@@ -262,33 +264,14 @@ cs::MjpegServer StartSwitchedCamera(const SwitchedCameraConfig& config) {
 
   return server;
 }
+}
 
-// example pipeline
-class MyPipeline : public frc::VisionPipeline {
- public:
-  int val = 0;
-
-  void Process(cv::Mat& mat) override {
-    ++val;
-  }
-};
-}  // namespace
 
 int main(int argc, char* argv[]) {
   if (argc >= 2) configFile = argv[1];
 
   // read configuration
   if (!ReadConfig()) return EXIT_FAILURE;
-
-  // start NetworkTables
-  auto ntinst = nt::NetworkTableInstance::GetDefault();
-  if (server) {
-    wpi::outs() << "Setting up NetworkTables server\n";
-    ntinst.StartServer();
-  } else {
-    wpi::outs() << "Setting up NetworkTables client for team " << team << '\n';
-    ntinst.StartClientTeam(team);
-  }
 
   // start cameras
   for (const auto& config : cameraConfigs)
@@ -297,12 +280,24 @@ int main(int argc, char* argv[]) {
   // start switched cameras
   for (const auto& config : switchedCameraConfigs) StartSwitchedCamera(config);
 
+  // start NetworkTables
+  auto ntinst = nt::NetworkTableInstance::GetDefault();
+  if (server) {
+    wpi::outs() << "Setting up NetworkTables server\n";
+    ntinst.StartServer();
+  } else {
+    wpi::outs() << "Setting up NetworkTables client for team " << team << '\n';
+    ntinst.StartClient("10.18.6.2");
+    wpi::outs() << "Finished setting up NetworkTables client for team " << team << '\n';
+  }
+
   // start image processing on camera 0 if present
   if (cameras.size() >= 1) {
     std::thread([&] {
-      frc::VisionRunner<GoalPipeline> runner(cameras[0], new MyPipeline(),
-                                           [&](GoalPipeline &pipeline) {
-        // do something with pipeline results
+      frc::VisionRunner<grip::GoalPipeline> runner(cameras[0], new grip::GoalPipeline(),
+		                                   [&](grip::GoalPipeline &pipeline) {
+	pipeline.outputToSmartDashboard(ntinst);
+		
       });
       /* something like this for GRIP:
       frc::VisionRunner<MyPipeline> runner(cameras[0], new grip::GripPipeline(),
@@ -313,6 +308,10 @@ int main(int argc, char* argv[]) {
       runner.RunForever();
     }).detach();
   }
+
+
+
+
 
   // loop forever
   for (;;) std::this_thread::sleep_for(std::chrono::seconds(10));
