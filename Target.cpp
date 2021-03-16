@@ -3,6 +3,8 @@
 #include "CameraInfo.h"
 #include "Util.h"
 
+//This may all seem confusing, but it's written for a camera that is in portrait mode, rotated left 90 degrees.
+
 Target::Target(const std::vector<cv::Point>& points, CameraInfo cameraInfo){
     mPoints = points;
     mCameraInfo = cameraInfo;
@@ -14,7 +16,7 @@ bool Target::isValid(){
 }
 
 double Target::getDistanceToTarget(){
-    return 19.63 / tan(Util::degreesToRadians(mCameraInfo.getVerticalAngle(right.y) - mCameraInfo.getVerticalAngle(left.y)) * (1/2));
+    return (getLeftDistance() + getRightDistance()) / 2;
 }
 
 double Target::getRobotToTargetAngle(){
@@ -35,7 +37,7 @@ double Target::getRightDistance(){
 }
 
 double Target::getDistanceToSide(double x){
-    return (100.0 - mCameraInfo.getCameraHeight()) * tan(Util::degreesToRadians(mCameraInfo.getHorizontalAngle(x))); //some trig; TODO: Find actual distance from camera to goal
+    return (98.25 - mCameraInfo.getCameraHeight()) / tan(Util::degreesToRadians(mCameraInfo.getHorizontalAngle(x))); //some trig; TODO: Find actual distance from camera to goal
 } 
 
 
