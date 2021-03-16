@@ -24,7 +24,7 @@ double Target::getRobotToTargetAngle(){
 }
 
 double Target::getTargetSkewAngle(){
-    return(Util::radiansToDegrees((getLeftDistance() - getRightDistance() / 39.26)));
+    return(Util::radiansToDegrees(atan(getLeftDistance() - getRightDistance() / 39.26)));
     
 }
 
