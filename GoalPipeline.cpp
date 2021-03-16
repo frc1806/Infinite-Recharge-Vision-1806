@@ -9,7 +9,9 @@
 namespace grip {
 
 GoalPipeline::GoalPipeline() {
-	mCameraInfo = CameraInfo(82.1, 3840.0, 52.2, 2160.0); 
+	//Horiz FOV = sin(arcsin(9/16)) * 90
+	//Vert FOV = cos(arcsin(9/16)) * 90
+	mCameraInfo = CameraInfo(44.123511569, 1366, 78.74417983412, 720);
 }
 /**
 * Runs an iteration of the pipeline and updates outputs.
@@ -36,22 +38,22 @@ void GoalPipeline::Process(cv::Mat& source0){
 	findContours(findContoursInput, findContoursExternalOnly, this->findContoursOutput);
 	//Step Filter_Contours0:
 	//input
-	std::vector<std::vector<cv::Point> > filterContoursContours = findContoursOutput;
-	double filterContoursMinArea = 30.0;  // default Double
-	double filterContoursMinPerimeter = 0.0;  // default Double
-	double filterContoursMinWidth = 0.0;  // default Double
-	double filterContoursMaxWidth = 1000.0;  // default Double
-	double filterContoursMinHeight = 0.0;  // default Double
-	double filterContoursMaxHeight = 1000.0;  // default Double
-	double filterContoursSolidity[] = {0, 100};
-	double filterContoursMaxVertices = 1000000.0;  // default Double
-	double filterContoursMinVertices = 0.0;  // default Double
-	double filterContoursMinRatio = 0.0;  // default Double
-	double filterContoursMaxRatio = 1000.0;  // default Double
+	//std::vector<std::vector<cv::Point> > filterContoursContours = findContoursOutput;
+	//double filterContoursMinArea = 30.0;  // default Double
+	//double filterContoursMinPerimeter = 0.0;  // default Double
+	//double filterContoursMinWidth = 0.0;  // default Double
+	//double filterContoursMaxWidth = 1000.0;  // default Double
+	//double filterContoursMinHeight = 0.0;  // default Double
+	//double filterContoursMaxHeight = 1000.0;  // default Double
+	//double filterContoursSolidity[] = {0, 100};
+	//double filterContoursMaxVertices = 1000000.0;  // default Double
+	//double filterContoursMinVertices = 0.0;  // default Double
+	//double filterContoursMinRatio = 0.0;  // default Double
+	//double filterContoursMaxRatio = 1000.0;  // default Double
 	//filterContours(filterContoursContours, filterContoursMinArea, filterContoursMinPerimeter, filterContoursMinWidth, filterContoursMaxWidth, filterContoursMinHeight, filterContoursMaxHeight, filterContoursSolidity, filterContoursMaxVertices, filterContoursMinVertices, filterContoursMinRatio, filterContoursMaxRatio, this->filterContoursOutput);
-	double approxPolyMinLineDist = 50.0;
-	approximatePolygons(findContoursOutput, approxPolyOutput, approxPolyMinLineDist);
-	generateTargets(approxPolyOutput, targetsOutput);
+	//double approxPolyMinLineDist = 50.0;
+	//approximatePolygons(findContoursOutput, approxPolyOutput, approxPolyMinLineDist);
+	generateTargets(findContoursOutput, targetsOutput);
 	auto end = std::chrono::high_resolution_clock::now();
 	processingTime = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count(); ;
 }

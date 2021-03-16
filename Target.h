@@ -14,6 +14,8 @@ class Target
         double getDistanceToTarget();
         double getRobotToTargetAngle();
         double getTargetSkewAngle();
+        bool isOnLeftEdge();
+        bool isOnRightEdge();
     
     private:
         double getLeftDistance();
@@ -24,6 +26,8 @@ class Target
         CameraInfo mCameraInfo;
         cv::Point right;
         cv::Point left;
+        bool leftEdge;
+        bool rightEdge;
         bool valid;
 
 }

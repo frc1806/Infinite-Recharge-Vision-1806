@@ -1,5 +1,6 @@
 #pragma once
 #include <math.h>
+#inlcude "Util.h"
 
 class CameraInfo{
     public:
@@ -9,12 +10,12 @@ class CameraInfo{
         inline void setCameraPositionInfo(double verticalTilt, double cameraHeight){mVerticalTilt = verticalTilt; mCameraHeight = cameraHeight;}
         inline double getHorizontalFOV(){ return mHorizontalFOV;}
         inline double getHorizontalResolution(){return mHorizontalResolution;}
-        inline double getHorizontalFocalLength() {return mHorizontalResolution / (2* tan(((mHorizontalFOV * M_PI) / 180.0)/2));}
-        inline double getHorizontalAngle(double pixel){return (atan((pixel - (getHorizontalResolution()/2))/getHorizontalFocalLength())* 180.0) / M_PI;}
+        inline double getHorizontalFocalLength() {return mHorizontalResolution / (2* tan(((Util::degreesToRadians(mHorizontalFOV))/2));}
+        inline double getHorizontalAngle(double pixel){return Util::radiansToDegrees(atan((pixel - (getHorizontalResolution()/2))/getHorizontalFocalLength()));}
         inline double getVerticalFOV(){return mVerticalFOV;}
         inline double getVerticalResolution(){return mVerticalResolution;}
-        inline double getVerticalFocalLength() {return mVerticalResolution / (2* tan(((mVerticalFOV * M_PI) / 180.0)/2));}
-        inline double getVerticalAngle(double pixel){return mVerticalTilt + (atan((pixel - (getVerticalResolution()/2))/getVerticalFocalLength())* 180.0) / M_PI;}
+        inline double getVerticalFocalLength() {return mVerticalResolution / (2* tan(((Util::degreesToRadians(mVerticalFOV))/2));}
+        inline double getVerticalAngle(double pixel){return mVerticalTilt + Util::radiansToDegrees(atan((pixel - (getVerticalResolution()/2))/getVerticalFocalLength()));}
         inline double getCameraHeight(){return mCameraHeight;}
 
     private:
